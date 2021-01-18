@@ -15,22 +15,34 @@
       class="tile__overlay"
       :style="{
         borderRadius: `${cellWidth / 2}px`,
-      }"></div>
+      }">
+      <div class="center">
+        <h3 class="tile__name">{{ tile.name }}</h3>
+        <a
+          v-if="tile.authorLink"
+          class="tile__author"
+          :href="tile.authorLink">
+          {{ tile.author }}
+        </a>
+        <span v-else class="tile__author">{{ tile.author }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .tile {
   position: absolute;
+  cursor: grab;
 }
 
 .tile:hover .tile__overlay {
-  background-color: rgba(255, 255, 255, 0.25);
+  opacity: 1;
 }
 
-.tile.dragging .tile__overlay {
+.tile:active {
+  cursor: grabbing;
   z-index: 1;
-  background-color: rgba(255, 255, 255, 0.5);
 }
 
 .tile__canvas {
@@ -43,9 +55,33 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: transparent;
+  background-color:black;
+  border: solid 4px white;
   pointer-events: none;
-  transition: background-color 250ms ease-in-out;
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 250ms ease-in-out;
+}
+
+.tile__overlay > .center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.tile__name {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.tile__author {
+  font-size: 2rem;
 }
 </style>
 
@@ -135,7 +171,9 @@ export default class Tile extends Vue {
   }
 
   getCellValue(x: number, y: number): number {
-    const scale = this.tile.eval(
+    const scale = this.tile.evaluate(
+      this.cells,
+      (y * this.cells) + x,
       x,
       y,
       this.time,

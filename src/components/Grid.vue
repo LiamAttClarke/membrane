@@ -24,7 +24,7 @@
       }">
       <Tile
         v-for="(tile, index) in tiles"
-        :key="tile.name"
+        :key="index"
         ref="tiles"
         :tile="tile"
         :position="getTilePosition(tile)"
@@ -103,6 +103,10 @@ export default class Grid extends Vue {
     this.position = this.position.add(originOffset);
   }
 
+  getTileAtPosition(x: number, y: number): Tile|null {
+    return this.tiles.find((tile) => tile.gridX === x && tile.gridY === y) || null;
+  }
+
   onWheel(event: WheelEvent) {
     if (event.deltaY) {
       this.zoomToTarget(
@@ -129,8 +133,13 @@ export default class Grid extends Vue {
   onTileRelease(tileIndex: number, offset: Vector2) {
     this.isEditing = false;
     const tile = this.tiles[tileIndex];
-    tile.gridX += roundToNearest(offset.x, this.tileSize) / this.tileSize;
-    tile.gridY += roundToNearest(offset.y, this.tileSize) / this.tileSize;
+    const gridX = tile.gridX + roundToNearest(offset.x, this.tileSize) / this.tileSize;
+    const gridY = tile.gridY + roundToNearest(offset.y, this.tileSize) / this.tileSize;
+    const blockingTile = this.getTileAtPosition(gridX, gridY);
+    if (!blockingTile) {
+      tile.gridX = gridX;
+      tile.gridY = gridY;
+    }
   }
 }
 </script>
