@@ -4,7 +4,8 @@
       :tiles="tiles"
       :tile-size="512"
       :tile-cells="16"
-      :time="time" />
+      :time="time"
+      @click="onGridClick" />
     <div class="app__overlay">
       <div class="top-left">
         <h1 class="app__heading">Membrane</h1>
@@ -90,11 +91,13 @@ h1, h2, h3, h4, h5, h6 {
 </style>
 
 <script lang="ts">
+import Vector2 from 'drag-handler/Vector2';
 import { Component, Vue } from 'vue-property-decorator';
-import GridComponent from './components/Grid.vue';
+import GridComponent, { GridEvent } from './components/Grid.vue';
 import Tile from './models/Tile';
 
 const FPS = 60;
+const DEFAULT_FUNCTION_BODY = 'sin(t)';
 
 @Component({
   components: {
@@ -102,13 +105,7 @@ const FPS = 60;
   },
 })
 export default class App extends Vue {
-  tiles: Tile[] = [
-    new Tile(0, 0),
-    new Tile(1, 0),
-
-    new Tile(0, 1),
-    new Tile(1, 1),
-  ];
+  tiles: Tile[] = [];
 
   time = Date.now();
 
@@ -117,6 +114,14 @@ export default class App extends Vue {
       // Time in seconds
       this.time = Date.now() / 1000;
     }, 1000 / FPS);
+  }
+
+  onGridClick(event: GridEvent) {
+    this.tiles.push(new Tile(
+      event.gridPosition.x,
+      event.gridPosition.y,
+      DEFAULT_FUNCTION_BODY,
+    ));
   }
 }
 </script>

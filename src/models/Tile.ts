@@ -1,3 +1,8 @@
+/* eslint-disable no-new-func */
+import { FUNCTION_HELPERS } from '../constants';
+
+const TILE_PARAMS = ['s', 'i', 'x', 'y', 't'];
+
 export default class Tile {
   name = 'Base Tile';
 
@@ -9,9 +14,27 @@ export default class Tile {
 
   gridY: number;
 
-  constructor(gridX: number, gridY: number) {
+  private fnBody!: string;
+
+  private fn!: Function;
+
+  constructor(gridX: number, gridY: number, functionBody: string) {
     this.gridX = gridX;
     this.gridY = gridY;
+    this.functionBody = functionBody;
+  }
+
+  get functionBody() {
+    return this.fnBody;
+  }
+
+  set functionBody(body: string) {
+    this.fnBody = body;
+    this.fn = new Function(
+      ...TILE_PARAMS,
+      ...Object.keys(FUNCTION_HELPERS),
+      `return ${body}`,
+    );
   }
 
   /**
@@ -25,6 +48,7 @@ export default class Tile {
    * @returns {number} A value between -1 and 1. Values will be clamped within this range.
    */
   evaluate(s: number, i: number, x: number, y: number, t: number): number {
-    return Math.sin(t);
+    const helperParams = Object.values(FUNCTION_HELPERS);
+    return this.fn(s, i, x, y, t, ...helperParams);
   }
 }

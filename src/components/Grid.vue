@@ -47,6 +47,11 @@ import { clamp, roundToNearest } from '../math-utils';
 import TileComponent from './Tile.vue';
 import Tile from '../models/Tile';
 
+export type GridEvent = {
+  originalEvent: Event;
+  gridPosition: Vector2;
+};
+
 @Component({
   components: {
     Tile: TileComponent,
@@ -75,10 +80,20 @@ export default class Grid extends Vue {
 
   isEditing = false;
 
+  isDragging = false;
+
   mounted() {
     this.dragHandler = new DragHandler(this.$refs.background as Element, {
       onDragMove: this.onGridMove.bind(this),
+      onDragCancel: this.onGridClick.bind(this),
     });
+  }
+
+  getGridPosition(position: Vector2): Vector2 {
+    return new Vector2(
+      roundToNearest(position.x, this.tileSize) / this.tileSize,
+      roundToNearest(position.y, this.tileSize) / this.tileSize,
+    );
   }
 
   getTilePosition(tile: Tile) {
@@ -119,6 +134,14 @@ export default class Grid extends Vue {
     }
   }
 
+  onGridClick({ pointerEvent }: DragEvent) {
+    const pointerOffset = new Vector2(pointerEvent.offsetX, pointerEvent.offsetY);
+    this.$emit('click', {
+      event: pointerEvent,
+      gridPosition: this.getGridPosition(this.position.add(pointerOffset)),
+    });
+  }
+
   onGridMove({ dragOffsetDelta }: DragEvent) {
     if (dragOffsetDelta) {
       const delta = dragOffsetDelta.multiplyByScalar(1 / this.zoom);
@@ -133,12 +156,14 @@ export default class Grid extends Vue {
   onTileRelease(tileIndex: number, offset: Vector2) {
     this.isEditing = false;
     const tile = this.tiles[tileIndex];
-    const gridX = tile.gridX + roundToNearest(offset.x, this.tileSize) / this.tileSize;
-    const gridY = tile.gridY + roundToNearest(offset.y, this.tileSize) / this.tileSize;
-    const blockingTile = this.getTileAtPosition(gridX, gridY);
+    const gridPosition = this.getGridPosition(new Vector2(
+      tile.gridX + offset.x,
+      tile.gridY + offset.y,
+    ));
+    const blockingTile = this.getTileAtPosition(gridPosition.x, gridPosition.y);
     if (!blockingTile) {
-      tile.gridX = gridX;
-      tile.gridY = gridY;
+      tile.gridX = gridPosition.x;
+      tile.gridY = gridPosition.y;
     }
   }
 }
@@ -164,7 +189,7 @@ export default class Grid extends Vue {
 .grid__pattern {
   stroke: white;
   stroke-width: 1;
-  opacity: 0;
+  opacity: 0.5;
   transition: opacity 250ms ease-in-out;
 }
 

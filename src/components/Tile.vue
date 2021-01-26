@@ -16,7 +16,7 @@
       :style="{
         borderRadius: `${cellWidth / 2}px`,
       }">
-      <div class="center">
+      <header>
         <h3 class="tile__name">{{ tile.name }}</h3>
         <a
           v-if="tile.authorLink"
@@ -25,7 +25,8 @@
           {{ tile.author }}
         </a>
         <span v-else class="tile__author">{{ tile.author }}</span>
-      </div>
+      </header>
+      <input type="text">
     </div>
   </div>
 </template>
@@ -36,13 +37,13 @@
   cursor: grab;
 }
 
-.tile:hover .tile__overlay {
-  opacity: 1;
-}
-
 .tile:active {
   cursor: grabbing;
   z-index: 1;
+}
+
+.tile:hover .tile__overlay, .tile:focus .tile__overlay {
+  opacity: 0.75;
 }
 
 .tile__canvas {
@@ -55,15 +56,17 @@
   left: 0;
   width: 100%;
   height: 100%;
+  padding: 16px;
   background-color:black;
-  border: solid 4px white;
-  pointer-events: none;
-  opacity: 0;
+  border: dashed 3px white;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  opacity: 0;
   transition: opacity 250ms ease-in-out;
+}
+
+.tile__overlay.active {
+  opacity: 1;
 }
 
 .tile__overlay > .center {
@@ -76,12 +79,13 @@
 }
 
 .tile__name {
-  font-size: 3rem;
-  margin-bottom: 16px;
+  font-size: 2rem;
+  margin: 0;
+  margin-bottom: 4px;
 }
 
 .tile__author {
-  font-size: 2rem;
+  font-size: 1rem;
 }
 </style>
 
